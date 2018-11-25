@@ -15,18 +15,18 @@
 \usepackage{enumitem}
 \usepackage{csquotes}
 \usepackage{verbatim}
-\usepackage{minted}
+\usepackage[cache=false]{minted}
 
 \usemintedstyle{fruity}
 
-\title{}
+\title{Community detection in networks}
 \author{Carlos Requena López}
 
 %% Fancy layout
 \pagestyle{fancy}
-\lhead{}
+\lhead{INFO-F521}
 \chead{}
-\rhead{}
+\rhead{Carlos Requena}
 \lfoot{}
 \cfoot{}
 \rfoot{Page \thepage\ of \pageref{LastPage}}
@@ -36,16 +36,14 @@
 
 %%% --- %%% --- DOCUMENT START --- %%% --- %%%
 \begin{document}
+\thispagestyle{fancy}
 \maketitle
-\thispagestyle{empty}
-\tableofcontents
-\newpage
-%%% Counting pages now %%%
-\pagestyle{fancy}
-\setcounter{page}{1}
-
+\thispagestyle{fancy}
 
 \section{Introduction}
+
+The topic of this assignment is community detection in networks by
+means of hierarchical clustering. First, the problem is described
 
 \section{Analysis and expectations}
 
@@ -65,7 +63,12 @@
 \appendix
 \section{Appendix - code listing}
 
-\begin{minted}{clojure}
+\begin{minted}{minted}
 \end{minted}
+
+
+\bibliographystyle{ieeetr}
+\bibliography{main}
+\nocite{*}
 
 \end{document}
