@@ -43,11 +43,26 @@
 \section{Introduction}
 
 The topic of this assignment is community detection in networks by
-means of hierarchical clustering. First, the problem is described
+means of hierarchical clustering. Informally, communities can be seen
+as dense (highly connected) subgraphs.
+
+Hierarchical clustering (HC) refers to the technique of grouping
+together elements that share some sort of similarity and separating
+those that do not.
 
 \section{Analysis and expectations}
 
+Let $ G = (V, E) $ be an undirected graph.
+
+$$ \mu_i = \frac{1}{n} \sum_{j=1}^{n} A_{ij} $$
+
+$$ \sigma^2 = \frac{1}{n} \sum_{j=1}^{n} (A_{ij} - \mu_i)^2 $$
+
+$$ x_{ij} = \frac{\frac{1}{n}\sum_{k=1}^{n}(A_{ik} - \mu_i)(A_{jk}-\mu_j)}{\sigma_i\sigma_j} $$
+
 \section{Implementation}
+
+The graph $ G $ is given as an adjacency matrix, which is parsed
 
 \section{Results}
 
@@ -60,15 +75,17 @@ means of hierarchical clustering. First, the problem is described
 %   \label{fig:fig1}
 % \end{figure}
 
-\appendix
-\section{Appendix - code listing}
-
-\begin{minted}{minted}
-\end{minted}
-
-
 \bibliographystyle{ieeetr}
 \bibliography{main}
 \nocite{*}
+
+\appendix
+\section{Appendix - code listing}
+
+\inputminted{python}{../src/main.py}
+
+% \begin{minted}{minted}
+% \end{minted}
+
 
 \end{document}
