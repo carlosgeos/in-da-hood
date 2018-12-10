@@ -112,11 +112,13 @@ Algorithms for HC do not require the size of the partitions of the
 number of partitions to be specified. Obviously, the output of the
 program - a set containing all vertices - is not really meaningful;
 that is why the process is captured in a data structure called
-\emph{dendogram}
+\emph{dendogram}. The $n$ biggest clusters can be taken by
+\emph{cutting} horizontally the dendogram at level $h - n$, where $h$
+is the height of the dendogram.
 
 \subsubsection{Single-linkage clustering}
 
-The main formula behind the concept of complete linkage is:
+The main formula behind the concept of single linkage is:
 
 $$ \mathrm{max}\{x_{i,j} : i \in P_a, j \in P_b\} $$
 
@@ -124,10 +126,13 @@ where ${P_a}$ and $P_b$ are two partitions of $V$.
 
 \subsubsection{Complete-linkage clustering}
 
-In contrast to the complete linkage method, single linkage will look
+In contrast to the single linkage method, complete linkage will look
 the least similar vertices among pairwise observations:
 
 $$ \mathrm{min}\{x_{i,j} : i \in P_a, j \in P_b\} $$
+
+This is the maximum distance we can find between two different set
+vertices.
 
 In both cases, those are the functions to satifisfy when merging new
 partitions.
