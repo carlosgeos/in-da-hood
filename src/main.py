@@ -1,4 +1,5 @@
 from math import sqrt
+from copy import deepcopy
 import numpy as np
 
 import networkx as nx
@@ -55,47 +56,59 @@ def p_correlation(adj, means, variances):
 
 
 def slink(sim):
+    """Using single-linkage, builds a tree of clusters, where at each
+    level (index of array tree)
+
+    """
     tree = [{}]
     for x in range(len(sim) - 1):
-        max_cell = np.nanmax(sim)
-        print("max_value is:", max_cell)
         max_ij = np.unravel_index(np.nanargmax(sim), (len(sim), len(sim)))
-        print("maxij is: ", max_ij)
         keep = min(max_ij)
         throw = max(max_ij)
         for i in range(len(sim)):
             if keep != i and throw != i:
-                sim[keep][i] = max(sim[keep][i], sim[throw][i])
-                sim[i][keep] = max(sim[i][keep], sim[i][throw])
-        sim = np.delete(sim, throw, 0)
-        sim = np.delete(sim, throw, 1)
-        before = tree[x]
-        tree.append(dict(before))
-        if keep:
-            pass
+                sim[keep, i] = max(sim[keep, i], sim[throw, i])
+                sim[i, keep] = max(sim[i, keep], sim[i, throw])
+            if throw != i:
+                sim[throw, i] = np.NINF
+                sim[i, throw] = np.NINF
+
+        before = tree[len(tree) - 1]
+        tree.append(deepcopy(before))
+        now = tree[len(tree) - 1]
+        if keep in now and throw in now:
+            now[keep].extend(now[throw])
+            now[keep].append(throw)
+            now.pop(throw)
+        elif keep in now:
+            now[keep].append(throw)
+        elif throw in now:
+            now[keep] = [throw]
+            now[keep].extend(now[throw])
+            now.pop(throw)
+        else:
+            now[keep] = [throw]
+
+    return tree
 
 
-
-
-
-
+# Graph definition
 n = 100
-G = nx.random_geometric_graph(n, 0.3)
+G = nx.random_geometric_graph(n, 0.1)
 adj = list(G.adjacency())
 
+# Derived structural information
 means = list(map(lambda x: mu(x, n), adj))
 variances = sigma(adj, means)
 similarities = p_correlation(adj, means, variances)
 
-print("Means:", means)
-print("Variances:", variances)
-print("Similarities:\n", similarities)
+# Hierarchical clustering
+tree = slink(similarities)
+level = int(n - n/5)
 
-plotter = Plotter(G)
+plotter = Plotter(G, tree[level])
 
 plotter.plot()
-
-slink(similarities)
 
 if __name__ == '__main__':
     pass
