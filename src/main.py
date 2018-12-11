@@ -1,4 +1,5 @@
 from slink import slink
+from clink import clink
 from measures import mu, sigma, p_correlation
 from plot import Plotter
 import numpy as np
@@ -8,7 +9,7 @@ np.set_printoptions(precision=3)
 
 
 # Graph definition
-n = 100
+n = 200
 G = nx.random_geometric_graph(n, 0.1)
 adj = list(G.adjacency())
 
@@ -19,7 +20,7 @@ similarities = p_correlation(adj, means, variances)
 
 # Hierarchical clustering
 tree = slink(similarities)
-level = int(n - n/5)
+level = n - int(n / 6)
 
 plotter = Plotter(G, tree[level])
 

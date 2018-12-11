@@ -19,7 +19,14 @@
 \usepackage[cache=false]{minted}
 \usepackage[ruled,vlined]{algorithm2e}
 
-\usemintedstyle{fruity}
+\usemintedstyle{default}
+\setminted{
+  linenos=true,
+  breaklines=true,
+  fontsize=\small,
+  frame=single,
+}
+%\usemintedstyle{fruity}
 
 \title{Community detection in networks}
 \author{Carlos Requena López}
@@ -138,6 +145,8 @@ In both cases, those are the functions to satifisfy when merging new
 partitions.
 
 
+
+
 For example, for the simple graph given in
 fig. \ref{fig:simple_graph}, the means, variances and similarity
 measures are given in table
@@ -170,7 +179,7 @@ Let's answer the questions formulated in the statement:
     \nl \While{X \textrm{has shape} > 1x1}{
       \nl Repeat lines 3 through 5\;
     }
-    \caption{\bf SLOW_S-LINK}
+    \caption{\bf SLOW\_S-LINK}
     \label{slink}
   \end{algorithm}
 
@@ -188,7 +197,7 @@ Let's answer the questions formulated in the statement:
     \nl \While{X \textrm{has shape} > 1x1}{
       \nl Repeat lines 3 through 5\;
     }
-    \caption{\bf SLOW_C-LINK}
+    \caption{\bf SLOW\_C-LINK}
     \label{clink}
   \end{algorithm}
 
@@ -204,11 +213,16 @@ Let's answer the questions formulated in the statement:
   $\mathcal{O}(n^3)$.
 
 \item[Difference between single link and complete link.] \hfill \\
-  On the one hand, single-linkage combines two clusters or partitions
-  that contain the closest (or most similar) pair of elements that are
-  not yet merged into a single cluster. It favours
+  On the one hand, single-linkage merges two clusters or partitions by
+  retaining the maximum similarity (or minimum distance) between the
+  two. This gives rise to the \emph{chaining phenomenon}, e.g.: if
+  there is a very ``powerful'' node with high similarity with a lot of
+  other nodes, the latter will be chained successively to the first
+  one since it is the only one that counts in that cluster.
 
-  On the other hand, complete linkage
+  On the other hand, complete linkage remembers ``the worst'' or
+  ``weakest'' element there is when merging two clusters. This results
+  in more balanced, similar sized clusters.
 
   A third approach not discussed here, \emph{average linkage}, does
   not consider a single vertex (the one with lowest or highest) per
@@ -261,7 +275,15 @@ The graph $ G $ is given as an adjacency matrix, which is parsed
 \appendix
 \section{Appendix - code listing}
 
-\inputminted{python}{../src/main.py}
+\inputminted[label=main.py]{python}{../src/main.py}
+\hfill
+\inputminted[label=measures.py]{python}{../src/measures.py}
+\hfill
+\inputminted[label=slink.py]{python}{../src/slink.py}
+\hfill
+\inputminted[label=clink.py]{python}{../src/clink.py}
+\hfill
+\inputminted[label=plot.py]{python}{../src/plot.py}
 
 % \begin{minted}{minted}
 % \end{minted}
