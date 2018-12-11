@@ -64,7 +64,7 @@ class Plotter:
             marker=dict(
                 showscale=False,
                 color=[],
-                size=12,
+                size=15,
                 # line=dict(width=2)))
                 line={'color': [],
                       'width': 2}))
