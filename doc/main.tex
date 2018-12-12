@@ -164,16 +164,17 @@ Let's answer the questions formulated in the statement:
 \item[Pseudocode of single linkage and complete linkage algorithms] \hfill
   \\
   The pseudocodes for basic single linkage and complete linkage
-  algorithms are given in \ref{slink} and \ref{clink}
+  algorithms are given in \ref{slink} and \ref{clink}.
+
   \begin{algorithm}[h]
     \SetAlgoLined
-    \KwIn{An undirected connected graph G}
+    \KwIn{An undirected graph G}
     \KwOut{The tree of clusters}
 
     \nl Compute the proximity (similarity) matrix X for the given G.\;
     \nl Place every vertex in its own set.\;
-    \nl Find the two most similar sets and merge them.\;
-    \nl Remove the entry in X and update it by choosing the highest
+    \nl Find the two most similar elements in different sets and merge them.\;
+    \nl Remove one of the entries in X and update the other by choosing the highest
     values possible.\;
     \nl Append merge information to tree to keep the history of events.\;
     \nl \While{X \textrm{has shape} > 1x1}{
@@ -185,13 +186,13 @@ Let's answer the questions formulated in the statement:
 
   \begin{algorithm}[h]
     \SetAlgoLined
-    \KwIn{An undirected connected graph G}
+    \KwIn{An undirected graph G}
     \KwOut{The tree of clusters}
 
     \nl Compute the proximity (similarity) matrix X for the given G.\;
     \nl Place every vertex in its own set.\;
-    \nl Find the two least similar sets and merge them.\;
-    \nl Remove the entry in X and update it by choosing the lowest
+    \nl Find the two most similar elements in different sets and merge them.\;
+    \nl Remove one of the entries in X and update the other one by choosing the lowest
     values possible.\;
     \nl Append merge information to tree to keep the history of events.\;
     \nl \While{X \textrm{has shape} > 1x1}{
@@ -201,16 +202,28 @@ Let's answer the questions formulated in the statement:
     \label{clink}
   \end{algorithm}
 
+  The last step of the algorithm, which is keeping information about
+  the merges done, is useful to plot the dendogram or recreate the
+  merge history and be able to ``cut'' the tree at a certain point to
+  obtain the partitions.
+
 \item[Computational complexity] \hfill \\
 
   For both cases, the complexity of the algorithm is
   $\mathcal{O}(n^3)$: computing the similarity matrix (or distance
   information) takes $\mathcal{O}(nm)$ \cite{newman}, where $n$ is the
   number of vertices and $m$ is the number of edges. We need to check
-  the minimum element in an array of size $n^2$, so, by the adversary
-  argument, this takes $\mathcal{O}(n^2)$, and this check has to be
-  done a maximum of $n$ times. Therefore, the naive upper bound is
-  $\mathcal{O}(n^3)$.
+  the minimum element in an array of size $n^2$, so by the adversary
+  argument, this takes $\Omega (n^2)$, and this check has to be
+  done a maximum of $n$ times. Therefore, the upper bound for the
+  naive algorithm is $\mathcal{O}(n^3)$.
+
+  As a side note, the library \texttt{SciPy} for Python, implements an
+  $\mathcal{O}(n^2)$ algorithm for single-linkage and
+  complete-linkage, based on minimum spanning tree and
+  nearest-neighbour chain respectively.
+
+
 
 \item[Difference between single link and complete link.] \hfill \\
   On the one hand, single-linkage merges two clusters or partitions by
@@ -253,11 +266,10 @@ Let's answer the questions formulated in the statement:
 
 
 
-\section{Implementation}
+\section{Implementation and results}
 
-The graph $ G $ is given as an adjacency matrix, which is parsed
-
-\section{Results}
+A graph $ G $ is given as an adjacency matrix, and from it, the
+similarity matrix can be obtained.
 
 \section{Conclusion}
 
