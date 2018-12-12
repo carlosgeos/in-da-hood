@@ -9,15 +9,30 @@
 \usepackage{lastpage}
 \usepackage{appendix}
 \usepackage{amsmath}
+\usepackage{mathtools}
 \usepackage{color}
 \usepackage{palatino}
-\usepackage{changepage}
+\usepackage[strict]{changepage}
 \usepackage{subcaption}
 \usepackage{enumitem}
 \usepackage{csquotes}
 \usepackage{verbatim}
 \usepackage[cache=false]{minted}
 \usepackage[ruled,vlined]{algorithm2e}
+
+\newenvironment{changemargin}[2]{%
+  \begin{list}{}{%
+      \setlength{\topsep}{0pt}%
+      \setlength{\leftmargin}{#1}%
+      \setlength{\rightmargin}{#2}%
+      \setlength{\listparindent}{\parindent}%
+      \setlength{\itemindent}{\parindent}%
+      \setlength{\parsep}{\parskip}%
+    }%
+  \item[]}{\end{list}}
+
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
 
 \usemintedstyle{default}
 \setminted{
@@ -26,7 +41,7 @@
   fontsize=\small,
   frame=single,
 }
-%\usemintedstyle{fruity}
+% \usemintedstyle{fruity}
 
 \title{Community detection in networks}
 \author{Carlos Requena López}
@@ -84,11 +99,11 @@ determine the similarity between vertices in the graph, but there
 could be plenty of other sources depending on the application
 domain. For example, when analysing text files, the similarity measure
 could be the amount of equal significant words each one contains, or
-in the case of aminoacids, the number of times it appears on protein
-$p$ at location $l$.
+in the case of aminoacids, the number of appearances at a certain
+location.
 
 Here, however, we compute the mean and variance between the rows of
-the adjacency matrix as follows (if $A$ was not symmetric and $G$
+the adjacency matrix as follows (if $A$ was not symmetric or $G$
 undirected, it would have to be computed for rows \emph{and} columns):
 
 $$ \mu_i = \frac{1}{n} \sum_{j=1}^{n} A_{ij} $$
@@ -104,166 +119,167 @@ $$ x_{ij} = \frac{\frac{1}{n}\sum_{k=1}^{n}(A_{ik} -
 All diagonal elements are excluded from these calculations
 \cite[p.~369]{socionetwork}. The value $x_{ij}$ can range from -1 to
 1, and it gives a measure of how structurally similar two vertices
-are.
+are. Two vertices do not need to be adjacent for this quantity to be
+significant, although they usually are.
 
 \subsection{Hierarchical clustering}
 
-Once the similarity measures are developed, they serve as a base to
+Once the similarity measures are set, they serve as a base to
 implement agglomerative HC. By observing the set of partitions (the
 number of partitions is the number of elements at step 0), we can
-define the function to maximise when deciding which two partitions to
-merge. This is repeated until there is only one partition (containing
-all the elements) left.
+define the function to maximise when merging two of them. This is
+repeated until there is only one partition (containing all the
+elements) left.
 
 Algorithms for HC do not require the size of the partitions of the
 number of partitions to be specified. Obviously, the output of the
 program - a set containing all vertices - is not really meaningful;
 that is why the process is captured in a data structure called
-\emph{dendogram}. The $n$ biggest clusters can be taken by
-\emph{cutting} horizontally the dendogram at level $h - n$, where $h$
-is the height of the dendogram.
+\emph{dendogram}. This one can be \emph{cut} horizontally to inspect
+the clusters at the cut level.
 
-\subsubsection{Single-linkage clustering}
+\subsubsection{Pseudocode of single linkage and complete linkage
+  algorithms}
 
-The main formula behind the concept of single linkage is:
+The pseudocodes for basic single linkage and complete linkage
+clustering are given in algorithms \ref{slink} and \ref{clink}.
+
+\begin{algorithm}[h]
+  \SetAlgoLined
+  \KwIn{An undirected graph G}
+  \KwOut{The tree of clusters}
+
+  \nl Compute the proximity (similarity) matrix X for the given G.\;
+  \nl Place every vertex in its own set.\;
+  \nl Find the two most similar elements in different sets and merge them.\;
+  \nl Remove one of the entries in X and update the other by choosing the highest
+  values possible.\;
+  \nl Append merge information to tree to keep the history of events.\;
+  \nl \While{X \textrm{has shape} > 1x1}{
+    \nl Repeat lines 3 through 5\;
+  }
+  \caption{\bf SLOW\_S-LINK}
+  \label{slink}
+\end{algorithm}
+
+\begin{algorithm}[h]
+  \SetAlgoLined
+  \KwIn{An undirected graph G}
+  \KwOut{The tree of clusters}
+
+  \nl Compute the proximity (similarity) matrix X for the given G.\;
+  \nl Place every vertex in its own set.\;
+  \nl Find the two most similar elements in different sets and merge them.\;
+  \nl Remove one of the entries in X and update the other one by choosing the lowest
+  values possible.\;
+  \nl Append merge information to tree to keep the history of events.\;
+  \nl \While{X \textrm{has shape} > 1x1}{
+    \nl Repeat lines 3 through 5\;
+  }
+  \caption{\bf SLOW\_C-LINK}
+  \label{clink}
+\end{algorithm}
+
+The last step of the algorithm, which is keeping information about
+the merges done, is useful to plot the dendogram or recreate the
+merge history and be able to ``cut'' the tree at a certain point to
+obtain the partitions.
+
+\subsubsection{Computational complexity}
+
+For both cases, the complexity of the algorithm is
+$\mathcal{O}(n^3)$: computing the similarity matrix (or distance
+information) takes $\mathcal{O}(nm)$ \cite{newman}, where $n$ is the
+number of vertices and $m$ is the number of edges. We need to check
+the minimum element in an array of size $n^2$, so by the adversary
+argument, this takes $\Omega (n^2)$, and this check has to be
+done a maximum of $n$ times. Therefore, the upper bound for the
+naive algorithm is $\mathcal{O}(n^3)$.
+
+As a side note, the library \texttt{SciPy} for Python, implements an
+$\mathcal{O}(n^2)$ algorithm for single-linkage and
+complete-linkage, based on minimum spanning tree and
+nearest-neighbour chain respectively.
+
+\subsubsection{Difference between single link and complete link}
+
+On the one hand, single-linkage merges two clusters or partitions by
+retaining the maximum similarity (or minimum distance) between the
+two. The main formula behind the concept of single linkage is:
 
 $$ \mathrm{max}\{x_{i,j} : i \in P_a, j \in P_b\} $$
 
 where ${P_a}$ and $P_b$ are two partitions of $V$.
 
-\subsubsection{Complete-linkage clustering}
+This gives rise to the \emph{chaining phenomenon}, e.g.: if
+there is a very ``powerful'' node with high similarity with a lot of
+other nodes, the latter will be chained successively to the first
+one since it is the only one that counts in that cluster.
 
-In contrast to the single linkage method, complete linkage will look
-the least similar vertices among pairwise observations:
+On the other hand, complete linkage remembers the ``weakest'' or more
+distant element there is when merging two clusters. This results in
+more balanced, similar sized clusters. Usually, this is what we are
+looking for. The function used is:
 
 $$ \mathrm{min}\{x_{i,j} : i \in P_a, j \in P_b\} $$
 
-This is the maximum distance we can find between two different set
-vertices.
+A third approach not discussed here, \emph{average linkage}, does not
+consider a single vertex (the one with lowest or highest scores) per
+partition. Instead, it computes an average of similarities among the
+members of the newly created partition, and sets the score of the
+member to that average.
 
-In both cases, those are the functions to satifisfy when merging new
-partitions.
+Figures \ref{fig:slink-vs-clink} and \ref{fig:slink-vs-clink2} show an
+example for the same random graph, for single-linkage and
+complete-linkage at two different cuts in the tree.
 
-
-
-
-For example, for the simple graph given in
-fig. \ref{fig:simple_graph}, the means, variances and similarity
-measures are given in table
-
-\begin{figure}[ht!]
+\begin{figure}
   \centering
-  \includegraphics[width=0.6\textwidth]{img/simple_graph.png}
-  \caption{Simple graph with 5 vertices}
-  \label{fig:simple_graph}
+  \begin{subfigure}[h]{0.49\textwidth}
+    \includegraphics[width=\linewidth]{img/slink-200-160.png}
+    \caption{Single linkage}
+  \end{subfigure}
+  \begin{subfigure}[h]{0.49\textwidth}
+    \includegraphics[width=\linewidth]{img/clink-200-160.png}
+    \caption{Complete linkage}
+  \end{subfigure}
+  \caption{Random graph. Tree cut at step 160. For $n = 200$}
+  \label{fig:slink-vs-clink}
 \end{figure}
 
-Let's answer the questions formulated in the statement:
+\begin{figure}
+  \centering
+  \begin{subfigure}[h]{0.49\textwidth}
+    \includegraphics[width=\linewidth]{img/slink-200-180.png}
+    \caption{Single linkage}
+  \end{subfigure}
+  \begin{subfigure}[h]{0.49\textwidth}
+    \includegraphics[width=\linewidth]{img/clink-200-180.png}
+    \caption{Complete linkage}
+  \end{subfigure}
+  \caption{Random graph. Tree cut at step 180. For $n = 200$}
+  \label{fig:slink-vs-clink2}
+\end{figure}
 
-\begin{description}
-\item[Pseudocode of single linkage and complete linkage algorithms] \hfill
-  \\
-  The pseudocodes for basic single linkage and complete linkage
-  algorithms are given in \ref{slink} and \ref{clink}.
+Every colour represents a different partition.
 
-  \begin{algorithm}[h]
-    \SetAlgoLined
-    \KwIn{An undirected graph G}
-    \KwOut{The tree of clusters}
+\subsubsection{Optimality of solution at each step}
 
-    \nl Compute the proximity (similarity) matrix X for the given G.\;
-    \nl Place every vertex in its own set.\;
-    \nl Find the two most similar elements in different sets and merge them.\;
-    \nl Remove one of the entries in X and update the other by choosing the highest
-    values possible.\;
-    \nl Append merge information to tree to keep the history of events.\;
-    \nl \While{X \textrm{has shape} > 1x1}{
-      \nl Repeat lines 3 through 5\;
-    }
-    \caption{\bf SLOW\_S-LINK}
-    \label{slink}
-  \end{algorithm}
+The main disadvantage of complete linkage is that it considers
+degenerate points (isolated vertices in our case) to have more
+importance than what they really do.
 
-  \begin{algorithm}[h]
-    \SetAlgoLined
-    \KwIn{An undirected graph G}
-    \KwOut{The tree of clusters}
+\subsubsection{What happens in the case of a tie?}
 
-    \nl Compute the proximity (similarity) matrix X for the given G.\;
-    \nl Place every vertex in its own set.\;
-    \nl Find the two most similar elements in different sets and merge them.\;
-    \nl Remove one of the entries in X and update the other one by choosing the lowest
-    values possible.\;
-    \nl Append merge information to tree to keep the history of events.\;
-    \nl \While{X \textrm{has shape} > 1x1}{
-      \nl Repeat lines 3 through 5\;
-    }
-    \caption{\bf SLOW\_C-LINK}
-    \label{clink}
-  \end{algorithm}
+Several approaches exist to deal with the non-uniqueness problem of
+similarities in the data set \cite{nonunique}:
 
-  The last step of the algorithm, which is keeping information about
-  the merges done, is useful to plot the dendogram or recreate the
-  merge history and be able to ``cut'' the tree at a certain point to
-  obtain the partitions.
-
-\item[Computational complexity] \hfill \\
-
-  For both cases, the complexity of the algorithm is
-  $\mathcal{O}(n^3)$: computing the similarity matrix (or distance
-  information) takes $\mathcal{O}(nm)$ \cite{newman}, where $n$ is the
-  number of vertices and $m$ is the number of edges. We need to check
-  the minimum element in an array of size $n^2$, so by the adversary
-  argument, this takes $\Omega (n^2)$, and this check has to be
-  done a maximum of $n$ times. Therefore, the upper bound for the
-  naive algorithm is $\mathcal{O}(n^3)$.
-
-  As a side note, the library \texttt{SciPy} for Python, implements an
-  $\mathcal{O}(n^2)$ algorithm for single-linkage and
-  complete-linkage, based on minimum spanning tree and
-  nearest-neighbour chain respectively.
-
-
-
-\item[Difference between single link and complete link.] \hfill \\
-  On the one hand, single-linkage merges two clusters or partitions by
-  retaining the maximum similarity (or minimum distance) between the
-  two. This gives rise to the \emph{chaining phenomenon}, e.g.: if
-  there is a very ``powerful'' node with high similarity with a lot of
-  other nodes, the latter will be chained successively to the first
-  one since it is the only one that counts in that cluster.
-
-  On the other hand, complete linkage remembers ``the worst'' or
-  ``weakest'' element there is when merging two clusters. This results
-  in more balanced, similar sized clusters.
-
-  A third approach not discussed here, \emph{average linkage}, does
-  not consider a single vertex (the one with lowest or highest) per
-  partition to match into another partition. Instead, it computes an
-  average of similarities among the members of that partition to
-  determine if they are similar (or distant) enough to be merged with
-  another partition.
-
-\item[Optimality of solution at each step] \hfill \\
-
-
-
-\item[What happens in the case of a tie?]  \hfill \\
-
-  Several approaches exist to deal with the non-uniqueness problem of
-  similarities in the data set \cite{nonunique}:
-
-  \begin{itemize}
-  \item Arbitrarily choosing between the elements in the tie.
-  \item Deterministically choosing between the elements in the tie
-    (the element with smaller index for example).
-  \item Merge all tied elements at the same time.
-  \end{itemize}
-
-
-
-\end{description}
-
+\begin{itemize}
+\item Arbitrarily choosing between the elements in the tie.
+\item Deterministically choosing between the elements in the tie
+  (the element with smaller index for example).
+\item Merge all tied elements at the same time.
+\end{itemize}
 
 
 \section{Implementation and results}
@@ -271,7 +287,15 @@ Let's answer the questions formulated in the statement:
 A graph $ G $ is given as an adjacency matrix, and from it, the
 similarity matrix can be obtained.
 
+We can then proceed to do some tests on different networks to see how
+both methods perform. We will cut the tree at a late stage, to obtain
+decently sized clusters. We can then check if the clusters correspond
+to dense areas of the graph that have sparse connections to other
+components.
+
 \section{Conclusion}
+
+
 
 % \begin{figure}[ht!]
 %   \centering
@@ -291,14 +315,6 @@ similarity matrix can be obtained.
 \hfill
 \inputminted[label=measures.py]{python}{../src/measures.py}
 \hfill
-\inputminted[label=slink.py]{python}{../src/slink.py}
-\hfill
-\inputminted[label=clink.py]{python}{../src/clink.py}
-\hfill
-\inputminted[label=plot.py]{python}{../src/plot.py}
-
-% \begin{minted}{minted}
-% \end{minted}
-
+\inputminted[label=clink.py]{python}{../src/link.py}
 
 \end{document}

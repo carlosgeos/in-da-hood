@@ -1,18 +1,16 @@
 import plotly
-import plotly.plotly as py
 import plotly.graph_objs as go
 
 import networkx as nx
 
 
 class Plotter:
-    def __init__(self, G, clusters):
+    def __init__(self, G, tree, filename):
         self.G = G
-        self.clusters = clusters
+        self.tree = tree
         self.pos = nx.get_node_attributes(self.G, 'pos')
-        self.color_dict = self.assign_color(clusters)
-        self.dmin = 1
-        self.ncenter = 0
+
+        self.filename = filename
 
     def assign_color(self, clusters):
         """Assigns a different color to each cluster given in clusters
@@ -26,26 +24,26 @@ class Plotter:
                   '#808000', '#ffe8b1', '#000075', '#808080',
                   '#7ab301', '#000000', "#ff0000", "#9b59b6",
                   "#3498db", "#2ecc71", "#0000ff", "#FFE979",
-                  "#58BABA", "#772F0F", '#f00', '#f00',
-                  '#f00', '#f00', '#f00', '#f00', '#f00',
-                  '#f00', '#f00', '#f00', '#f00', '#f00',
-                  '#f00', '#f00', '#f00', '#f00', '#f00']
+                  "#58BABA", "#772F0F", '#f00']
+
         for i, (lead, cluster) in enumerate(clusters.items()):
-            color_dict[lead] = colors[i]
+            color_dict[lead] = colors[i % len(colors)]
             for cluster_member in cluster:
-                color_dict[cluster_member] = colors[i]
+                color_dict[cluster_member] = colors[i % len(colors)]
 
         return color_dict
 
-    def plot(self):
+    def plot(self, level):
         """Generates a scatter plot (nodes) and edge trace and puts them into
         a Figure that is plotted with plotly.
 
         """
+        clusters = self.tree[level]
+        color_dict = self.assign_color(clusters)
         edge_trace = go.Scatter(
             x=[],
             y=[],
-            line=dict(width=0.8, color='#999'),
+            line=dict(width=1, color='#999'),
             hoverinfo='none',
             mode='lines')
 
@@ -65,7 +63,6 @@ class Plotter:
                 showscale=False,
                 color=[],
                 size=15,
-                # line=dict(width=2)))
                 line={'color': [],
                       'width': 2}))
 
@@ -75,10 +72,10 @@ class Plotter:
             node_trace['y'] += tuple([y])
             node_info = 'Node: ' + str(node)
             node_trace['text'] += tuple([node_info])
-            if node in self.color_dict:
-                node_trace['marker']['color'] += tuple([self.color_dict[node]])
+            if node in color_dict:
+                node_trace['marker']['color'] += tuple([color_dict[node]])
                 node_trace['marker']['line']['color'] += \
-                    tuple([self.color_dict[node]])
+                    tuple([color_dict[node]])
             else:
                 node_trace['marker']['color'] += tuple(['#000'])
                 node_trace['marker']['line']['color'] += tuple(['#000'])
@@ -93,4 +90,4 @@ class Plotter:
                             xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                             yaxis=dict(showgrid=False, zeroline=False, showticklabels=False)))
 
-        plotly.offline.plot(fig, filename='networkx.html')
+        plotly.offline.plot(fig, filename=self.filename)

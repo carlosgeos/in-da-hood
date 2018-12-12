@@ -372,4 +372,6 @@ TSWLatexianTemp*
 .DS_Store
 *.pdf
 
+clink.html
+slink.html
 networkx.html

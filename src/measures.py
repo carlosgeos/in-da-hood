@@ -11,7 +11,8 @@ def mu(row, n):
 
 
 def sigma(adj, means):
-    """Computes the variance for a whole 2D array
+    """Computes the variance for all nodes, given the adjacency matrix,
+    and the means as input.
 
     """
     variances = []
@@ -25,7 +26,7 @@ def sigma(adj, means):
 
 def p_correlation(adj, means, variances):
     """Returns a 2D matrix with the pearson correlation coefficient for
-    each element in arr
+    each element in adj.
 
     """
     simil = np.ones((len(adj), len(adj)))

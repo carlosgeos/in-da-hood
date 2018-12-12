@@ -1,7 +1,7 @@
-from slink import slink
-from clink import clink
+from link import link
 from measures import mu, sigma, p_correlation
 from plot import Plotter
+from copy import deepcopy
 import numpy as np
 import networkx as nx
 
@@ -19,12 +19,19 @@ variances = sigma(adj, means)
 similarities = p_correlation(adj, means, variances)
 
 # Hierarchical clustering
-tree = slink(similarities)
-level = n - int(n / 6)
+stree = link(deepcopy(similarities), max)
+ctree = link(deepcopy(similarities), min)
 
-plotter = Plotter(G, tree[level])
+splotter = Plotter(G, stree, "slink.html")
+cplotter = Plotter(G, ctree, "clink.html")
 
-plotter.plot()
+level1 = n - 40
+splotter.plot(level1)
+cplotter.plot(level1)
+
+level2 = n - 20
+splotter.plot(level2)
+cplotter.plot(level2)
 
 if __name__ == '__main__':
     pass
