@@ -9,8 +9,8 @@ np.set_printoptions(precision=3)
 
 
 # Graph definition
-n = 200
-G = nx.random_geometric_graph(n, 0.1)
+n = 500
+G = nx.random_geometric_graph(n, 0.05)
 adj = list(G.adjacency())
 
 # Derived structural information
@@ -25,13 +25,9 @@ ctree = link(deepcopy(similarities), min)
 splotter = Plotter(G, stree, "slink.html")
 cplotter = Plotter(G, ctree, "clink.html")
 
-level1 = n - 40
-splotter.plot(level1)
-cplotter.plot(level1)
-
-level2 = n - 20
-splotter.plot(level2)
-cplotter.plot(level2)
+level = 450
+splotter.plot(level)
+cplotter.plot(level)
 
 if __name__ == '__main__':
     pass

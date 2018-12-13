@@ -43,7 +43,7 @@ class Plotter:
         edge_trace = go.Scatter(
             x=[],
             y=[],
-            line=dict(width=1, color='#999'),
+            line=dict(width=1.3, color='#999'),
             hoverinfo='none',
             mode='lines')
 

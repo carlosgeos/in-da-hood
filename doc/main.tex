@@ -201,7 +201,7 @@ $\mathcal{O}(n^2)$ algorithm for single-linkage and
 complete-linkage, based on minimum spanning tree and
 nearest-neighbour chain respectively.
 
-\subsubsection{Difference between single link and complete link}
+\subsubsection{Differences between single link and complete link}
 
 On the one hand, single-linkage merges two clusters or partitions by
 retaining the maximum similarity (or minimum distance) between the
@@ -222,6 +222,10 @@ more balanced, similar sized clusters. Usually, this is what we are
 looking for. The function used is:
 
 $$ \mathrm{min}\{x_{i,j} : i \in P_a, j \in P_b\} $$
+
+The main disadvantage of complete linkage is that it considers
+degenerate points (isolated vertices in our case) to have more
+importance than what they really do.
 
 A third approach not discussed here, \emph{average linkage}, does not
 consider a single vertex (the one with lowest or highest scores) per
@@ -265,14 +269,116 @@ Every colour represents a different partition.
 
 \subsubsection{Optimality of solution at each step}
 
-The main disadvantage of complete linkage is that it considers
-degenerate points (isolated vertices in our case) to have more
-importance than what they really do.
+For single-linkage, we define a partitioning to be optimal if the
+quantity:
+
+$$ \sum_{C_1, C_2 \in \mathcal{P}} \mathrm{max}(Sim(C_1, C_2)) $$
+
+is minimum for all possible partions with the same number of
+classes. This means the separation between classes is maximum.
+
+To simplify things, let's consider clustering with euclidean distances
+(instead of similarity based on the structural properties of a
+graph). One such partitioning is shown in figure \ref{fig:simple}. In
+this example, there are 3 classes, coloured with red, blue and
+green. The claim is that this is the best possible partitioning and it
+is chosen by single linkage.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[width=0.5\textwidth]{img/simple.png}
+  \caption{A possible 3-class partitioning for 8 points in the plane}
+  \label{fig:simple}
+\end{figure}
+
+In figure \ref{fig:simple}, the sum of the shortest distance (maximum
+similarity) between classes is given by: $d(1,2) + d(1, 7) + d(4,8)$
+and it is the maximum total distance (minimal total similarity) we can
+get. Swapping the colour of any element to obtain a different
+partitioning would give a smaller quantity.
+
+Let's suppose 1 is swapped with 2, making the number smaller. Is this
+a possible scenario for single linkage ? It isn't, since, by choosing
+the maximum similarity couple at every step, the total between classes
+remains the minimum. Point 1 would have chosen point 2 before 3 or 4.
+
+We can also think of single-linkage as building a minimum
+spanning-tree. If there was some path of smaller distance that was not
+chosen, the spanning-tree built would not be minimum.
+
+The same can be said about complete-linkage and maximising the total
+maximum distance (minimum similarity) between classes, since out of
+the list of long distances, we are taking the minimum one, and then
+updating so the maximum distances are kept, yielding maximum distances
+in general.
+
 
 \subsubsection{What happens in the case of a tie?}
 
-Several approaches exist to deal with the non-uniqueness problem of
-similarities in the data set \cite{nonunique}:
+If at step $s$, there are 4 classes $C_1, C_2, C_3, C_4$ of a given
+possible partition, such that:
+
+$$ Sim(C_1, C_2) = Sim(C_3, C_4) = \max_{C_i, C_j \in
+  \mathcal{P}_s}(Sim(C_i, C_j))\ \ \ \ \ \ (\mathrm{Figure}\
+\ref{fig:tie-single})  $$
+
+\begin{itemize}
+\item Choosing to merge $C_1$ and $C_2$ we obtain
+  $\mathcal{P}_{s+1}^{A}$
+\item Choosing to merge $C_3$ and $C_4$ we obtain
+  $\mathcal{P}_{s+1}^{B}$
+\end{itemize}
+
+In both cases $\mathcal{P}_{s+2}$ will be the same. The partition that
+wasn't merged, will be merged. In the case of single linkage, no other
+couple can appear at $s+1$ with a bigger similarity than what we have
+at step $s$. In the case of complete linkage, even less so, since we
+update similarities taking the less similar elements.
+
+Figure \ref{fig:tie-single} shows the analogy to euclidean distances
+in the plane, since they are easier to visualise than the computed
+Pearson correlation for graphs. A tie would mean 3 or more points, all
+equidistant from each other. On this figure, classes $C_1$ and $C_2$
+are at the same distance as classes $C_3$ and $C_4$.
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[width=0.5\textwidth]{img/tie.png}
+  \caption{Tie with 4 classes}
+  \label{fig:tie4}
+\end{figure}
+
+Nonetheless a different thing happens if the tie occurs between a
+triplet of elements:
+
+$$ Sim(C_1, C_2) = Sim(C_1, C_3) = \max_{C_i, C_j \in
+  \mathcal{P}_s}(Sim(C_i, C_j))\ \ \ \ \ \ (\mathrm{Figure}\
+\ref{fig:real-tie})  $$
+
+\begin{figure}[ht!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{img/real-tie.png}
+  \caption{Tie with 3 classes}
+  \label{fig:real-tie}
+\end{figure}
+
+In this case, using single linkage and merging $C_1$ and either one of
+$C_2$ or $C_3$ first, the unmerged element still retains the maximum
+similarity with this newly created class (although more ties could
+appear).
+
+However, using complete linkage, if $C_1$ and $C_2$ are to be merged,
+$C_3$ might lose its status of maximum similarity with this new
+cluster. The partition $\mathcal{P}_{s+2}^A$ and in general
+$\mathcal{P}_{s+i}^{A}$ for the $i$ successive steps could look very
+different from $\mathcal{P}_{s+i}^B$.
+
+We therefore sometimes say that single-linkage is \emph{insensitive}
+to ties.
+
+As a side note, several approaches exist to deal with the
+non-uniqueness problem of similarities in the data set and are
+described in \cite{nonunique}:
 
 \begin{itemize}
 \item Arbitrarily choosing between the elements in the tie.
@@ -284,18 +390,76 @@ similarities in the data set \cite{nonunique}:
 
 \section{Implementation and results}
 
-A graph $ G $ is given as an adjacency matrix, and from it, the
-similarity matrix can be obtained.
+Several tests on random geometric graph with different parameters can
+be run to verify how both methods perform. The tree will be cut at a
+late stage, in order to obtain decently sized clusters. We can then
+check if the clusters correspond to dense areas of the graph that have
+sparse connections to other components.
 
-We can then proceed to do some tests on different networks to see how
-both methods perform. We will cut the tree at a late stage, to obtain
-decently sized clusters. We can then check if the clusters correspond
-to dense areas of the graph that have sparse connections to other
-components.
+The test network places $n$ vertices uniformly at random on a one by
+one canvas, and traces an edge from on to another if their distance is
+at most a radius $r$. This type of network can easily mimic
+communities and is useful to test clustering.
+
+\begin{figure}
+  \centering
+  \begin{subfigure}[h]{0.8\textwidth}
+    \includegraphics[width=\linewidth]{img/slink-200-170-02.png}
+    \caption{Single linkage}
+  \end{subfigure}
+  \begin{subfigure}[h]{0.8\textwidth}
+    \includegraphics[width=\linewidth]{img/clink-200-170-02.png}
+    \caption{Complete linkage}
+  \end{subfigure}
+  \caption{Random graph. $n = 200$. $r = 0.2$. Cut at step 170}
+  \label{fig:170-0.2}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \begin{subfigure}[h]{0.8\textwidth}
+    \includegraphics[width=\linewidth]{img/slink-200-170-01.png}
+    \caption{Single linkage}
+  \end{subfigure}
+  \begin{subfigure}[h]{0.8\textwidth}
+    \includegraphics[width=\linewidth]{img/clink-200-170-01.png}
+    \caption{Complete linkage}
+  \end{subfigure}
+  \caption{Random graph. $n = 200$. $r = 0.1$. Cut at step 170}
+  \label{fig:170-0.1}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \begin{subfigure}[h]{1\textwidth}
+    \includegraphics[width=\linewidth]{img/slink-500-450-005.png}
+    \caption{Single linkage}
+  \end{subfigure}
+  \begin{subfigure}[h]{1\textwidth}
+    \includegraphics[width=\linewidth]{img/clink-500-450-005.png}
+    \caption{Complete linkage}
+  \end{subfigure}
+  \caption{Random graph. $n = 500$. $r = 0.05$. Cut at step 450}
+  \label{fig:450-0.05}
+\end{figure}
 
 \section{Conclusion}
 
+These naive implementations of single-linkage and complete-linkage
+hierarchical clustering perform well on a different range of cases.
 
+In Figure \ref{fig:170-0.2}, the chaining phenomenon can be
+appreciated. At the same cut level, single linkage has a bloated class
+while complete linkage tries to keep balanced classes.
+
+In general, complete-linkage tends to merge vertices that do not form
+part of the same community on sparse graphs, such as in Figures
+\ref{fig:170-0.1} and \ref{fig:450-0.05}, but works better on later
+stages in dense graphs (Figure \ref{fig:170-0.2}).
+
+Single linkage does also perform very well putting disconnected
+components in their own cluster, or even components with a few bridges
+to other components, as can be seen in Figure \ref{fig:170-0.1}.
 
 % \begin{figure}[ht!]
 %   \centering
