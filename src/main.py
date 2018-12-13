@@ -2,11 +2,7 @@ from link import link
 from measures import mu, sigma, p_correlation
 from plot import Plotter
 from copy import deepcopy
-import numpy as np
 import networkx as nx
-
-np.set_printoptions(precision=3)
-
 
 # Graph definition
 n = 500
